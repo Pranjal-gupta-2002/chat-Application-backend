@@ -1,12 +1,35 @@
-import mongoose from "mongoose"
+import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
 
-const connectDB = (uri)=>{
-    mongoose
+export const cookieOptions = {
+  maxAge: 1000 * 60 * 60 * 24 * 7,
+  httpOnly: true,
+  sameSite: "none",
+  secure: true,
+};
+
+const connectDB = (uri) => {
+  mongoose
     .connect(uri, { dbName: "Chat-App" })
-    .then(() => {
-      console.log("Connected to MongoDB hii");
+    .then((data) => {
+      console.log(`Connected to MongoDB ${data.connection.host}`);
     })
-    .catch((res) => {
-      throw err
+    .catch((err) => {
+      throw err;
     });
+};
+
+const sendToken = (res, user, code, message) => {
+  const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
+  return res.status(code).cookie("token", token, cookieOptions).json({
+    success: true,
+    message,
+    user,
+  });
+};
+
+const emitEvent = (req,event,users,data)=>{
+  console.log("Emitting event",event)
 }
+
+export { connectDB, sendToken ,emitEvent};
